@@ -1,0 +1,712 @@
+{
+  "name": "AI Recruiting Expert - Ollama",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1h7xzBYlUjEVMXit8z3IOrJYrxOOb-JYf",
+          "mode": "list",
+          "cachedResultName": "n8n_resume",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1h7xzBYlUjEVMXit8z3IOrJYrxOOb-JYf"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "47f49e45-2158-4c94-b043-9ed45c8931a1",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -200,
+        480
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "JJoHBywkGftaJEEZ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "54bc440f-0d40-48f1-9adc-bbe36ec321ac",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        400,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Educational qualification",
+              "description": "Summary of your academic career. Focus on your high school and university studies. Summarize in 100 words maximum and also include your grade if applicable.",
+              "required": true
+            },
+            {
+              "name": "Job History",
+              "description": "Work history summary. Focus on your most recent work experiences. Summarize in 100 words maximum",
+              "required": true
+            },
+            {
+              "name": "Skills",
+              "type": "=[\"string\"]",
+              "description": "Extract the candidate's technical skills. What software and frameworks they are proficient in. Make a bulleted list.",
+              "required": true
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value.\n\nAlways return a single string\n"
+        }
+      },
+      "id": "8ccfc8f9-bbe5-4080-bbb2-1cbed258db35",
+      "name": "Qualifications",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        740,
+        560
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "summarizationMethodAndPrompts": {
+            "values": {
+              "combineMapPrompt": "=Write a concise summary of the following:\n\nCity: {{ $json.output.city }}\nBirthdate: {{ $json.output.birthdate }}\nEducational qualification: {{ $json.output[\"Educational qualification\"] }}\nJob History: {{ $json.output[\"Job History\"] }}\nSkills: {{ $json.output.Skills }}\n\nUse 100 words or less. Be concise and conversational.",
+              "prompt": "=Write a concise summary of the following:\n\nCity: {{ $json.output.city }}\nBirthdate: {{ $json.output.birthdate }}\nEducational qualification: {{ $json.output[\"Educational qualification\"] }}\nJob History: {{ $json.output[\"Job History\"] }}\nSkills: {{ $json.output.Skills }}\n\nUse 100 words or less. Be concise and conversational."
+            }
+          }
+        }
+      },
+      "id": "fe6b07ab-a0b5-47dc-83d4-400b98aa597e",
+      "name": "Summarization Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainSummarization",
+      "position": [
+        1460,
+        460
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "324bf938-7a6d-4a99-93f4-19cf8e252282",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1240,
+        460
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a3d049b0-5a70-4e7b-a6f2-81447da5282a",
+              "name": "profile_wanted",
+              "type": "string",
+              "value": "Job Context:  Brillmark is a leading software development company dedicated to delivering innovative solutions that transform our clients' businesses. We are committed to creating a diverse and inclusive workplace and encourage people of all races, genders, ages, abilities, orientations, and cultures to apply. We are looking for a passionate and experienced Full Stack Developer to produce scalable SaaS solutions. You'll be part of a cross-functional team that's responsible for the full software development life cycle, from conception to deployment. As a Full Stack Developer, you should be comfortable around both front-end and back-end coding languages, development frameworks, and third-party libraries. You should also be a team player with a knack for visual design and utility. Look for candidates who have developed and maintained one or more SaaS solutions in his career."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5f2fb9d9-a993-4cf3-b81b-19461025ff2b",
+      "name": "Profile Wanted",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1860,
+        460
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1wnxoX_UVPbZ3KsvuG8-Al8AvOQFk2DVrpF8WSp0NlcM",
+          "mode": "list",
+          "cachedResultName": "Candidate screening by AI",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wnxoX_UVPbZ3KsvuG8-Al8AvOQFk2DVrpF8WSp0NlcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Full Stack Developer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1wnxoX_UVPbZ3KsvuG8-Al8AvOQFk2DVrpF8WSp0NlcM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "EMAIL": "={{ $('Personal Data').item.json.output.email }}",
+            "SKILLS": "={{ $('Merge').item.json.output.Skills }}",
+            "SUMMARIZE": "={{ $('Summarization Chain').item.json.response.text }}",
+            "JOB HISTORY": "={{ $('Merge').item.json.output[\"Job History\"] }}",
+            "CONSIDERATION": "={{ $json.output.consideration }}",
+            "output": "={{ $('Qualifications').item.json.output }}",
+            "CITY": "={{ $('Merge').item.json.output.city }}",
+            "NAME": "={{ $('Merge').item.json.output.name }}",
+            "EDUCATION": "={{ $('Merge').item.json.output['Educational qualification'] }}",
+            "Age": "={{ $('Merge').item.json.output.birthdate }}",
+            "MOBILE": "={{ $('Personal Data').item.json.output.telephone }}",
+            "SCORE": "={{ $json.output.score }}",
+            "RESUME LINK": "={{ $('Google Drive Trigger').item.json.webViewLink }}",
+            "DATE": "={{ $now.format('dd/LL/yyyy') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "DATE",
+              "displayName": "DATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "MOBILE",
+              "displayName": "MOBILE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CITY",
+              "displayName": "CITY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Age",
+              "displayName": "Age",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "EDUCATION",
+              "displayName": "EDUCATION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "JOB HISTORY",
+              "displayName": "JOB HISTORY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SKILLS",
+              "displayName": "SKILLS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SUMMARIZE",
+              "displayName": "SUMMARIZE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SCORE",
+              "displayName": "SCORE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CONSIDERATION",
+              "displayName": "CONSIDERATION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RESUME LINK",
+              "displayName": "RESUME LINK",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6b1737ec-c6d7-4bb6-9bed-cbde7cc870c8",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2520,
+        460
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8gLWU7DXBNGhNrYa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"score\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"consideration\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}"
+      },
+      "id": "c0a9aa8b-4f78-47b0-b0fb-b329154c0b38",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        2280,
+        700
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"telephone\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n      \"city\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n      \"birthdate\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n      \"name\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n      \"email\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}",
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value. Make sure to extract the person's name and email address if available in the text."
+        }
+      },
+      "id": "373905ca-d957-4748-9028-b8e8a61156c4",
+      "name": "Personal Data",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "position": [
+        740,
+        400
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## AI Recruiting Expert \nThis workflow automates screening process, user will need to upload the CV/Resume to a specific Google Drive folder, the workflow will analyzing the candidate's qualifications against a predefined profile, and storing the results in a Google Sheet",
+        "width": 540,
+        "color": 3
+      },
+      "id": "67feba48-4fd1-46d7-ade9-587f7b86742c",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -200,
+        60
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "The CV/Resume is automatically detected in Google Drive and converted so that it can be processed\n",
+        "height": 280,
+        "width": 280,
+        "color": 4
+      },
+      "id": "8f218bd0-0e6f-47d4-8520-f64d7072763e",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        320,
+        380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "The essential information for evaluating the candidate is collected in two different chains",
+        "height": 440,
+        "width": 360
+      },
+      "id": "cfebb3ed-0112-4fa1-ae7d-6404b13d3709",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        700,
+        300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Summary of relevant information useful for classifying the candidate",
+        "height": 240,
+        "width": 320
+      },
+      "id": "1e8d2ca8-48c0-4603-b17c-2243a77fbf1f",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1420,
+        380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Characteristics of the profile sought by the company that intends to hire the candidate",
+        "height": 240,
+        "width": 220,
+        "color": 6
+      },
+      "id": "4064e412-ecef-461d-817a-3691cf065c00",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1800,
+        380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Candidate evaluation with score and considerations of the HR agent relating the profile sought with the candidate's skills",
+        "height": 240,
+        "width": 360
+      },
+      "id": "10b247e7-6978-4179-97ce-5e690b27e07f",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2060,
+        380
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        40,
+        480
+      ],
+      "id": "2e1052cb-e85d-4db1-9961-4a011bf1f826",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "JJoHBywkGftaJEEZ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Profile wanted:\n{{ $json.profile_wanted }}\n\nCandidate:\n{{ $('Summarization Chain').item.json.response.text }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an IT expert, Software Engineer and you need to understand if the candidate is in line with the profile sought by the company.|You must give a rating from 1 to 10 where 1 means that the candidate is not in line with what is required while 10 means that he is the ideal candidate because he fully reflects the profile sought. Furthermore, in the \"consideration\" field, motivate why you gave that rating."
+            }
+          ]
+        }
+      },
+      "id": "5f5d01dd-95a9-426b-8a7b-b278123757ab",
+      "name": "IT Expert",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        2120,
+        460
+      ],
+      "typeVersion": 1.5
+    },
+    {
+      "parameters": {
+        "model": "mistral:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1620,
+        880
+      ],
+      "id": "fed8ff86-69f2-49eb-abd6-c596bd5b3b7c",
+      "name": "Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "KWpaKuIDkwZXkwY2",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Summarization Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Personal Data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Profile Wanted": {
+      "main": [
+        [
+          {
+            "node": "IT Expert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualifications": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Qualifications",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Personal Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarization Chain": {
+      "main": [
+        [
+          {
+            "node": "Profile Wanted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "IT Expert",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IT Expert": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Personal Data",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Qualifications",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Summarization Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "IT Expert",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "baeb643a-7d41-4790-9047-f5253414d2fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9894b25863387a4c23e20a3ed4fcf0353073e73f33ee47c65ae636cd65334552"
+  },
+  "id": "OzXc17byBSOJu9eo",
+  "tags": [
+    {
+      "createdAt": "2025-03-06T14:53:35.323Z",
+      "updatedAt": "2025-03-06T14:53:35.323Z",
+      "id": "J1pRBaRjMbh3SjOL",
+      "name": "resume"
+    },
+    {
+      "createdAt": "2025-03-06T15:13:38.837Z",
+      "updatedAt": "2025-03-06T15:13:38.837Z",
+      "id": "OFNDyOPo7P1ym5N7",
+      "name": "analyze"
+    },
+    {
+      "createdAt": "2025-03-07T15:33:33.091Z",
+      "updatedAt": "2025-03-07T15:33:33.091Z",
+      "id": "iGLOgiVQ9ME3l48s",
+      "name": "local llm"
+    },
+    {
+      "createdAt": "2025-03-07T16:29:56.779Z",
+      "updatedAt": "2025-03-07T16:29:56.779Z",
+      "id": "5oUG38LrNNDRkO4y",
+      "name": "arifulislamat"
+    }
+  ]
+}
